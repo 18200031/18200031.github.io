@@ -11,26 +11,44 @@
         h2 { color: #1a73e8; margin-top: 0; text-align: center; font-size: 1.4rem; }
         .campo { margin-bottom: 18px; display: flex; flex-direction: column; }
         label { font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.9rem; }
-        input, select { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; outline: none; background-color: white; }
+        input { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; outline: none; background-color: white; }
         
         input[readonly] { background-color: #f9f9f9; color: #555; cursor: not-allowed; border-color: #eee; font-family: monospace; }
 
-        select#tipo_registro.inicio {
+        .tipo-botones { display: flex; gap: 10px; }
+
+        .btn-tipo {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            color: #888;
+            transition: all 0.2s;
+        }
+
+        .btn-tipo.inicio.activo {
             background-color: #e6f4ea;
             color: #1e7e34;
             border-color: #34a853;
-            font-weight: bold;
         }
 
-        select#tipo_registro.fin {
+        .btn-tipo.fin.activo {
             background-color: #fce8e6;
             color: #c5221f;
             border-color: #ea4335;
-            font-weight: bold;
+        }
+
+        .btn-tipo:not(.activo):hover {
+            background-color: #f0f0f0;
+            color: #555;
         }
         
-        button { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; margin-top: 10px; }
-        button:disabled { background: #ccc; }
+        button[type="submit"] { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; margin-top: 10px; }
+        button[type="submit"]:disabled { background: #ccc; }
         .status { font-size: 12px; color: #d93025; text-align: center; margin-top: 10px; font-weight: bold; }
         .success-text { color: #1e8e3e; }
     </style>
@@ -50,28 +68,22 @@
       const params = new URLSearchParams(window.location.search);
       const asesoria = params.get('asesoria');
       const inputAsesoria = document.getElementById('asesoria');
-
       if (asesoria) {
         inputAsesoria.value = asesoria;
         inputAsesoria.readOnly = true;
       }
     }
 
-    function actualizarColorTipoRegistro() {
-      const select = document.getElementById('tipo_registro');
-      select.classList.remove('inicio', 'fin');
-      if (select.value === 'Inicio') {
-        select.classList.add('inicio');
-      } else if (select.value === 'Fin') {
-        select.classList.add('fin');
-      }
+    function seleccionarTipo(valor) {
+      document.getElementById('tipo_registro').value = valor;
+      document.getElementById('btn-inicio').classList.toggle('activo', valor === 'Inicio');
+      document.getElementById('btn-fin').classList.toggle('activo', valor === 'Fin');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       setDateTimeLocalNow();
       cargarAsesoriaDesdeURL();
-      actualizarColorTipoRegistro();
-      document.getElementById('tipo_registro').addEventListener('change', actualizarColorTipoRegistro);
+      seleccionarTipo('Inicio');
     });
     </script>
 </head>
@@ -88,12 +100,14 @@
         </div>
 
         <div class="campo">
-            <label for="tipo_registro">Tipo de Registro:</label>
-            <select id="tipo_registro" name="tipo_registro" required>
-                <option value="Inicio" selected>Inicio</option>
-                <option value="Fin">Fin</option>
-            </select>
+            <label>Tipo de Registro:</label>
+            <div class="tipo-botones">
+                <button type="button" id="btn-inicio" class="btn-tipo inicio" onclick="seleccionarTipo('Inicio')">Inicio</button>
+                <button type="button" id="btn-fin" class="btn-tipo fin" onclick="seleccionarTipo('Fin')">Fin</button>
+            </div>
+            <input type="hidden" id="tipo_registro" name="tipo_registro" required>
         </div>
+
         <button type="submit" id="btnEnviar" disabled>Esperando GPS...</button>
         <div class="status" id="status_gps">Iniciando GPS...</div>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
@@ -136,7 +150,6 @@
                 if (latitud >= -90 && latitud <= 90 && longitud >= -180 && longitud <= 180) {
                     document.getElementById('lat').value = latitud.toFixed(5);
                     document.getElementById('lng').value = longitud.toFixed(5);
-                    
                     statusGps.innerText = "✅ Ubicación válida y fijada";
                     statusGps.className = "status success-text";
                     btn.disabled = false;
@@ -183,7 +196,7 @@
             btn.disabled = true;
             btn.innerText = "Esperando GPS...";
             cargarAsesoriaDesdeURL();
-            actualizarColorTipoRegistro();
+            seleccionarTipo('Inicio');
             obtenerUbicacion();
         })
         .catch(error => {
