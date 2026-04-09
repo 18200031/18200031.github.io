@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de sesión v1</title>
+    <title>Registro de sesión v2</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 400px; margin: auto; background-color: #f0f2f5; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
@@ -32,7 +32,21 @@
       document.getElementById('fecha_hora').value = formatted;
     }
 
-    document.addEventListener('DOMContentLoaded', setDateTimeLocalNow);
+    function cargarAsesoriaDesdeURL() {
+      const params = new URLSearchParams(window.location.search);
+      const asesoria = params.get('asesoria');
+      const inputAsesoria = document.getElementById('asesoria');
+
+      if (asesoria) {
+        inputAsesoria.value = asesoria;
+        inputAsesoria.readOnly = true; // Si viene por URL, lo bloqueamos
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setDateTimeLocalNow();
+      cargarAsesoriaDesdeURL();
+    });
     </script>
 </head>
 <body>
@@ -54,7 +68,8 @@
                 <option value="Fin">Fin</option>
             </select>
         </div>
-
+        <button type="submit" id="btnEnviar" disabled>Esperando GPS...</button>
+        <div class="status" id="status_gps">Iniciando GPS...</div>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
         <div class="campo">
@@ -74,9 +89,9 @@
             <input type="number" id="lng" name="lng" step="any" readonly required>
         </div>
 
-        <div class="status" id="status_gps">Iniciando GPS...</div>
         
-        <button type="submit" id="btnEnviar" disabled>Esperando GPS...</button>
+        
+        
     </form>
 </div>
 
@@ -95,7 +110,6 @@
                 let latitud = pos.coords.latitude;
                 let longitud = pos.coords.longitude;
 
-                // Validación de rangos y formateo a 5 decimales
                 if (latitud >= -90 && latitud <= 90 && longitud >= -180 && longitud <= 180) {
                     document.getElementById('lat').value = latitud.toFixed(5);
                     document.getElementById('lng').value = longitud.toFixed(5);
@@ -124,17 +138,13 @@
         btn.disabled = true;
         btn.innerText = "Enviando...";
 
-        // Convertimos a número decimal puro antes de enviar
         const payload = {
             asesoria: document.getElementById('asesoria').value,
             tipo_registro: document.getElementById('tipo_registro').value,
-            //fecha_hora: new Date().toLocaleString('es-ES'),
             fecha_hora: document.getElementById('fecha_hora').value,
             lat: parseFloat(document.getElementById('lat').value.replace(',', '.')),
             lng: parseFloat(document.getElementById('lng').value.replace(',', '.'))
         };
-
-    
 
         const urlScript = "https://script.google.com/macros/s/AKfycbzo-9fLDhvsi6lFKJ9qu40kiHr6kH7TmejGqhbc7K_7E9cLbIAdKxwhi_MGeH8q1Ta5/exec";
 
@@ -149,6 +159,8 @@
             document.getElementById('formAsesoria').reset();
             btn.disabled = true;
             btn.innerText = "Esperando GPS...";
+            // Restaurar el valor de asesoría desde la URL si existe
+            cargarAsesoriaDesdeURL();
             obtenerUbicacion();
         })
         .catch(error => {
