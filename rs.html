@@ -119,14 +119,15 @@
         
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
-        <div class="campo">
-            <label>Latitud:</label>
-            <input type="number" id="lat" name="lat" step="any" readonly required>
-        </div>
-
-        <div class="campo">
-            <label>Longitud:</label>
-            <input type="number" id="lng" name="lng" step="any" readonly required>
+        <div style="display: flex; gap: 10px;">
+            <div class="campo" style="flex: 1; min-width: 0;">
+                <label>Latitud:</label>
+                <input type="number" id="lat" name="lat" step="any" readonly required style="font-size: 13px; padding: 10px 8px;">
+            </div>
+            <div class="campo" style="flex: 1; min-width: 0;">
+                <label>Longitud:</label>
+                <input type="number" id="lng" name="lng" step="any" readonly required style="font-size: 13px; padding: 10px 8px;">
+            </div>
         </div>
 
     </form>
